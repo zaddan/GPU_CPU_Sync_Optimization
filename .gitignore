@@ -1,3 +1,9 @@
-MIS_parralel
+MIS_parallel
+MIS_result_parallel.txt
+MIS_result_serial.txt
+book_keeping.pyc
+generate_graph.pyc
+sparse_rep.txt
+verify.pyc
 MIS_serial
 log/
