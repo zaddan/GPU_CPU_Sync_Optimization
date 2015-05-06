@@ -154,13 +154,15 @@ int main(int argc, char *argv[]) {
     
     string outFilename; 
     string inFilename; 
-    if (argc <= 2) {
+    string logFileName;
+    if (argc <= 3) {
         cout << "not enough arguments" << endl;
-        cout <<" you need to provide the sparse graph file name and then desired output file name"<<endl; 
+        cout <<" you need to provide the sparse graph file name and then desired output file name and a logfile name"<<endl; 
         exit (EXIT_FAILURE); 
     }else{
         inFilename = argv[1];
         outFilename = argv[2]; 
+        logFileName = argv[3]; 
     } 
 
     int *nodes, *index_array;
@@ -225,6 +227,8 @@ int main(int argc, char *argv[]) {
 
         mis_parallel(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
         deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "status");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "status");
 #if DEBUG
         for(int p=0;p<numofnodes;p++)
         {
@@ -312,9 +316,8 @@ int main(int argc, char *argv[]) {
     write_output(outFilename , nodes_status_parallel, numofnodes);
      
     ///things zad changed  
-    string logFileName = argv[3]; 
-writeToFileNodesStatus(nodes_status_parallel, numofnodes,logFileName);
-    showNodesStatus(nodes_status_parallel, numofnodes);
+    //writeToFileNodesStatus(nodes_status_parallel, numofnodes,logFileName);
+    //showNodesStatus(nodes_status_parallel, numofnodes);
    /// end of things zad changed 
     
     delete[] nodes;

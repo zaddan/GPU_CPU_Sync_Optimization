@@ -1,6 +1,12 @@
 import os
 from book_keeping import *
 
+#get the values in a line 
+def getValue(line):
+    values = [] 
+    for words in (line.strip().split()):
+        values +=[int(words)]
+    return values
 
 
 def getSparse(sparseRepFileName):

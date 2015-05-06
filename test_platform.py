@@ -8,8 +8,12 @@ from time import gmtime, strftime
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------ONLY change this
 numOfNodes = 20 
-numOfTests = 1
+numOfTests = 2 
+#testName = "runSomeSampleTests"
 testName = "runSomeSampleTests"
+#testName = "runTillFailure" 
+
+
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #variables
 sparseRepFileName = "sparse_rep.txt" #sparse representation of the graph
@@ -85,10 +89,10 @@ if (testName == "runSomeSampleTests"):
             logFilePtr.close()
             logFileFailedCasePtr.close(); 
 
-
+failed = 0
 if (testName == "runTillFailure"): 
     counter  = 0
-    for i in range (0, numOfTests):
+    while (not (failed)): 
         #generate a graph	
         while not(generate_random_graphs(numOfNodes, sparseRepFileName)):
             counter +=1; #this is just so that while has a body, but the point is that we need to run the generate random_graph till the result is 1
