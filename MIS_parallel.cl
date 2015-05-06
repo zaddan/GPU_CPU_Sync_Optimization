@@ -20,6 +20,29 @@ __kernel void csquares(__global int *nodes, __global float *nodes_randvalues, __
         execute[i] = 0;
 }
 
+__kernel void csquares_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute, __global int* ready) {
+    int i = get_global_id(0);
+    
+    execute[i] = 1;
+
+    int numofneighbour = indexarray[i+1] - indexarray[i];
+
+    if(nodes_status[i] == ACTIVE )
+    {   
+        while(ready[i] == 0);
+        for(int k = 0; k < numofneighbour; k++){
+            while(ready[nodes[indexarray[i] + k]] == 0);
+
+            if(nodes_status[nodes[indexarray[i] + k]] == ACTIVE && nodes_randvalues[i] > nodes_randvalues[nodes[indexarray[i] + k]]) 
+            {
+                execute[i] = 0;
+                break;
+            }
+        }   
+    }
+    else
+        execute[i] = 0;
+}
 
 __kernel void deactivate_neighbors(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes,__global int* indexarray, __global int* execute) {
     int i = get_global_id(0);
