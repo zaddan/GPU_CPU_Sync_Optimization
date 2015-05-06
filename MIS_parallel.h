@@ -52,3 +52,6 @@ struct snk_image3d_s {
 
 #define __SNK_DEFS
 #endif
+extern _CPPSTRING_ void csquares(int* nodes,float* nodes_randvalues,int* nodes_status,int* numofnodes,int* indexarray,int* execute, const snk_lparm_t * lparm);
+extern _CPPSTRING_ void deactivate_neighbors(int* nodes,float* nodes_randvalues,int* nodes_status,int* numofnodes,int* indexarray,int* execute, const snk_lparm_t * lparm);
+extern _CPPSTRING_ void removeneig(int* nodes,short int* nodes_status,int* numofnodes,int* indexarray, const snk_lparm_t * lparm);

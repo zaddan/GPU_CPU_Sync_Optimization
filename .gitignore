@@ -6,4 +6,7 @@ generate_graph.pyc
 sparse_rep.txt
 verify.pyc
 MIS_serial
+MIS_parallel.o
 log/
+backup/
+
