@@ -8,6 +8,8 @@
 [ -z HSA_LIBHSAIL_PATH ] && HSA_LIBHSAIL_PATH=/opt/hsa/lib
 [ -z HSA_LLVM_PATH ] && HSA_LLVM_PATH=/opt/amd/bin
 export LD_LIBRARY_PATH=$HSA_RUNTIME_PATH/lib
+echo $1
+#setting up the compiler 
 #cxx=colorgcc
 cxx=g++
 

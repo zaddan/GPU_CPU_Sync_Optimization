@@ -310,7 +310,13 @@ int main(int argc, char *argv[]) {
 //
 //    write_output(outFilename + "_serial", nodes_status, numofnodes);
     write_output(outFilename , nodes_status_parallel, numofnodes);
-    showNodesStatus(nodes_status, numofnodes);
+     
+    ///things zad changed  
+    string logFileName = argv[3]; 
+writeToFileNodesStatus(nodes_status_parallel, numofnodes,logFileName);
+    showNodesStatus(nodes_status_parallel, numofnodes);
+   /// end of things zad changed 
+    
     delete[] nodes;
     delete[] nodes_randvalues;
     delete[] nodes_status;

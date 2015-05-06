@@ -28,9 +28,9 @@ void showNodesStatus(int *nodesStatus, int nodeArraySize){
     string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
     for (int i = 0; i< nodeArraySize; i++){
         if(showFullStatusName) {
-            cout<<"node "<< i << "th status is" << nodeStatusString[nodesStatus[i]];
+            cout<<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
         }else{
-            cout<<"node "<< i << "th status is" << nodesStatus[i];
+            cout<<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
         }
     }
 }
@@ -44,16 +44,16 @@ void showNodesStatus(int *nodesStatus, int nodeArraySize){
 void writeToFileNodesStatus(int *nodesStatus, int nodeArraySize, string fileName){
     //open the file
     ofstream myfile;
-    myfile.open (fileName.c_str());
+    myfile.open (fileName.c_str(), std::ios_base::app);
     //this veriable determines whether we want to show the complete name of the status or just numbers 
     bool showFullStatusName = true; 
     //change the following if status.h changed 
     string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
     for (int i = 0; i< nodeArraySize; i++){
         if(showFullStatusName) {
-            myfile <<"node "<< i << "th status is" << nodeStatusString[nodesStatus[i]];
+            myfile <<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
         }else{
-            myfile <<"node "<< i << "th status is" << nodesStatus[i];
+            myfile <<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
         }
      } 
     //closing the file 
