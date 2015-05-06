@@ -1,19 +1,16 @@
-
+using namespace std;
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
-using namespace std;
-#include "MIS_parallel.h"
 #include <fstream>
-
+#include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
-
+#include "MIS_parallel.h"
 #include "status.h"
-#include <iostream>
-
+#include "debug_helpers.h"
 
 /*
     reads input file and allocate node_array (list of neighbors) and 
@@ -313,7 +310,7 @@ int main(int argc, char *argv[]) {
 //
 //    write_output(outFilename + "_serial", nodes_status, numofnodes);
     write_output(outFilename , nodes_status_parallel, numofnodes);
-
+    showNodesStatus(nodes_status, numofnodes);
     delete[] nodes;
     delete[] nodes_randvalues;
     delete[] nodes_status;

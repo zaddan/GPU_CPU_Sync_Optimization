@@ -8,6 +8,8 @@
 [ -z HSA_LIBHSAIL_PATH ] && HSA_LIBHSAIL_PATH=/opt/hsa/lib
 [ -z HSA_LLVM_PATH ] && HSA_LLVM_PATH=/opt/amd/bin
 export LD_LIBRARY_PATH=$HSA_RUNTIME_PATH/lib
+#cxx=colorgcc
+cxx=g++
 
 # Compile accelerated functions
 echo 
@@ -20,12 +22,12 @@ echo
 if [ -f MIS_parallel ] ; then rm MIS_parallel ; fi
 
 #running the synchronux version
-echo g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
 #running the asynchrnous version
-#echo g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-#g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+#echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+#$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
 
 #  Make sure parci
