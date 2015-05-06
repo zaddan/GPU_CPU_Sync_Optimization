@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
         //for(int i = 0; i < numofnodes; i++)
         //    nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
 
-        csquares(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
+        mis_parallel(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
         deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
 #if DEBUG
         for(int p=0;p<numofnodes;p++)

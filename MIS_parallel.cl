@@ -1,5 +1,5 @@
 #include "status.h"
-__kernel void csquares(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute) {
+__kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute) {
     int i = get_global_id(0);
     
     execute[i] = 1;
@@ -20,7 +20,7 @@ __kernel void csquares(__global int *nodes, __global float *nodes_randvalues, __
         execute[i] = 0;
 }
 
-__kernel void csquares_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute, __global int* ready) {
+__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute, __global int* ready) {
     int i = get_global_id(0);
     
     execute[i] = 1;

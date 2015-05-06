@@ -1,3 +1,4 @@
+#all the following files are generated, thus we include them in the gitignore, since they change everytime we run the program
 MIS_parallel
 MIS_result_parallel.txt
 MIS_result_serial.txt
@@ -9,4 +10,4 @@ MIS_serial
 MIS_parallel.o
 log/
 backup/
-
+MIS_parallel.h 

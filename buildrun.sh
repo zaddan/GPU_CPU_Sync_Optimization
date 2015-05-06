@@ -18,12 +18,14 @@ snack.sh -q -c MIS_parallel.cl
 # Compile Main .c  and link to accelerated functions in matmulKernels.o
 echo 
 if [ -f MIS_parallel ] ; then rm MIS_parallel ; fi
-#echo gcc -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf 
-#echo gcc -O3 -o MIS_parallel MIS_parallel.o Csquares.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf 
-#g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf  -DDEBUG=1
-#g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-echo g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+
+#running the synchronux version
+echo g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+
+#running the asynchrnous version
+#echo g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+#g++ -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
 
 #  Make sure parci
