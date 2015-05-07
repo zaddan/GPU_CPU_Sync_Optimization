@@ -31,7 +31,6 @@ $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$H
 #echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 #$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
-
 #  Make sure parci
 #./MIS_parallel
 #./matmul 2000 2000 2000

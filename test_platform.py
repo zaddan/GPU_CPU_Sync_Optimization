@@ -10,7 +10,6 @@ from generate_graph import *
 numOfNodes = 7 
 numOfTests = 1
 #testName = "runSomeSampleTests"
-#testName = "runSomeSampleTests"
 testName = "runTillFailure" 
 
 
