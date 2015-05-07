@@ -24,12 +24,12 @@ echo
 if [ -f MIS_parallel ] ; then rm MIS_parallel ; fi
 
 #running the synchronux version
-echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+#echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+#$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
 #running the asynchrnous version
-#echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
-#$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+echo $cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
+$cxx -O3 -o MIS_parallel MIS_parallel.o MIS_parallel_async.cpp  debug_helpers.cpp -L$HSA_RUNTIME_PATH/lib -lhsa-runtime64 -lelf
 
 #  Make sure parci
 #./MIS_parallel
