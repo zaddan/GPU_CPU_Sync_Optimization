@@ -1,5 +1,5 @@
 #include "status.h"
-__kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute) {
+__kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute) {
     int i = get_global_id(0);
     
     execute[i] = 1;
@@ -20,7 +20,7 @@ __kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues
         execute[i] = 0;
 }
 
-__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes, __global int* indexarray, __global int* execute, __global int* ready) {
+__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute, __global int* ready) {
     int i = get_global_id(0);
     
     execute[i] = 1;
@@ -29,9 +29,9 @@ __kernel void mis_parallel_async(__global int *nodes, __global float *nodes_rand
 
     if(nodes_status[i] == ACTIVE )
     {   
-        while(ready[i] == 0);
+        //while(ready[i] == 0);
         for(int k = 0; k < numofneighbour; k++){
-            while(ready[nodes[indexarray[i] + k]] == 0);
+            //while(ready[nodes[indexarray[i] + k]] == 0);
 
             if(nodes_status[nodes[indexarray[i] + k]] == ACTIVE && nodes_randvalues[i] > nodes_randvalues[nodes[indexarray[i] + k]]) 
             {
@@ -44,7 +44,7 @@ __kernel void mis_parallel_async(__global int *nodes, __global float *nodes_rand
         execute[i] = 0;
 }
 
-__kernel void deactivate_neighbors(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status,__global int *numofnodes,__global int* indexarray, __global int* execute) {
+__kernel void deactivate_neighbors(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int *remaining_nodes, __global int* indexarray, __global int* execute) {
     int i = get_global_id(0);
     
     int numofneighbour = indexarray[i+1] - indexarray[i];
@@ -52,13 +52,13 @@ __kernel void deactivate_neighbors(__global int *nodes, __global float *nodes_ra
     if (execute[i] == 1)
     {
         nodes_status[i] = SELECTED;  // select myself
-        atomic_dec(numofnodes);  // remove myself from active node count
+        atomic_dec(remaining_nodes);  // remove myself from active node count
         for(int k = 0 ; k < numofneighbour; k++)
         {
-            if( atom_xchg(&nodes_status[nodes[indexarray[i] + k]], 0) )
+            if( atom_xchg(&nodes_status[nodes[indexarray[i] + k]], INACTIVE) )
             {
                 //nodes_status[nodes[indexarray[i] + k ]] = 0;
-                atomic_dec(numofnodes);
+                atomic_dec(remaining_nodes);
             }
         }
     }

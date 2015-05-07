@@ -10,8 +10,7 @@ from time import gmtime, strftime
 numOfNodes = 20 
 numOfTests = 1
 #testName = "runSomeSampleTests"
-testName = "runSomeSampleTests"
-#testName = "runTillFailure" 
+testName = "runTillFailure" 
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------

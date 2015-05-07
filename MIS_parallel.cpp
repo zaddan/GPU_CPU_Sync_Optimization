@@ -42,7 +42,7 @@ int read_input_file(string filename, int **addr_node_array, int **addr_index_arr
     
     int* node_array = new int[total_numofneighbors * 2]; //neighbours of each vertex, CSR representation
     //int* node_array = new int[total_numofneighbors]; //neighbours of each vertex, CSR representation
-    int* index_array = new int[numofnodes]; //index values(address values) for each node, CSR representation
+    int* index_array = new int[numofnodes + 1]; //index values(address values) for each node, CSR representation
 
     int node_index = 0;
     int accum_numofneighbors = 0;
@@ -50,24 +50,22 @@ int read_input_file(string filename, int **addr_node_array, int **addr_index_arr
     {   
         getline(myfile,line);
         istringstream iss(line);
-	 if (node_index < numofnodes) {	
-         index_array[node_index] = accum_numofneighbors;
-     }
+	    if (node_index < numofnodes) {	
+            index_array[node_index] = accum_numofneighbors;
+        }
         int temp;
         while (iss >> temp)
         {
             node_array[accum_numofneighbors] = temp - 1;    
-            //cout << temp << " ";
             accum_numofneighbors++;
         }
-        //cout << endl;
-        //cout << accum_numofneighbors << endl;
-        //cout << node_index << endl;
         node_index++;
     }
+    index_array[numofnodes] = accum_numofneighbors;
+
 #if DEBUG
     cout << "read_input_file:" << endl;
-    for(int i = 0; i < numofnodes - 1; i++)
+    for(int i = 0; i < numofnodes; i++)
     {
         cout << "node "<< i << ": ";
         for(int j = 0; j < index_array[i+1] - index_array[i]; j++)
@@ -171,7 +169,7 @@ int main(int argc, char *argv[]) {
 #if DEBUG
     cout << "MAIN: " <<endl;
     cout << "numofnodes: " << numofnodes << endl;
-    for(int i = 0; i < numofnodes - 1; i++)
+    for(int i = 0; i < numofnodes; i++)
     {
         cout << "node "<< i << ": ";
         for(int j = 0; j < index_array[i+1] - index_array[i]; j++)
@@ -224,12 +222,14 @@ int main(int argc, char *argv[]) {
         // randomize array
         //for(int i = 0; i < numofnodes; i++)
         //    nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-
-        mis_parallel(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
-        deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes,index_array,nodes_execute,lparm);
+        mis_parallel(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
+        deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+#if DEBUG
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+#endif
         //writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
+        //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #if DEBUG
         for(int p=0;p<numofnodes;p++)
         {
@@ -242,8 +242,8 @@ int main(int argc, char *argv[]) {
                 count++;
         printf("remaining: %d\n", gpu_remainingnodes);
         printf("count: %d\n", count);
-#endif
         cout << "gpu remaining nodes: " << gpu_remainingnodes << endl;
+#endif
         step++;
     }
 

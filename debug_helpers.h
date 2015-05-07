@@ -12,6 +12,6 @@ using namespace std;
 
 #include "status.h"
 #include <iostream>
-void showNodesInfo(int *nodesStatus, float *nodeRandValues, int nodeArraySize, string request);
-void writeToFileNodeInfo(int *nodesStatus, float *randValues, int nodeArraySize, string fileName, string request);
+void showNodesInfo(int *nodesStatus, float *nodeRandValues, int *nodesExec, int nodeArraySize, string request);
+void writeToFileNodeInfo(int *nodesStatus, float *randValues, int *nodesExec, int nodeArraySize, string fileName, string request);
     
