@@ -4,10 +4,10 @@ from book_keeping import *
 from generate_graph import *
 from verify import *
 from time import gmtime, strftime
-
+from generate_graph import *
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------ONLY change this
-numOfNodes = 20 
+numOfNodes = 7 
 numOfTests = 1
 #testName = "runSomeSampleTests"
 testName = "runTillFailure" 
@@ -49,8 +49,11 @@ if (testName == "runSomeSampleTests"):
         #os.remove(logFileName) 
         logFilePtr = open(logFileName, "a");
         sparseRepFilePtr= open(sparseRepFileName, "r");
+        #---------guide:::  writing the sparse graph in the log file
         logFilePtr.write("*************************sparse representation of the graph************************************\n")
+        logFilePtr.write("sparseMatrixStart ")
         logFilePtr.write(sparseRepFilePtr.read());
+        logFilePtr.write("sparseMatrixEnd ")
         logFilePtr.write("\n");
         logFilePtr.write("\n");
         logFilePtr.write("*************************Result of the serial implemetation************************************\n")
@@ -67,7 +70,6 @@ if (testName == "runSomeSampleTests"):
         #---------guide::: run the parallel code
         os.system("./buildrun.sh")
         os.system("./MIS_parallel" + " " + sparseRepFileName + " " + MISResultToVerifyFileNameParallel + " " + logFileName); 
-        print "hoooking here" 
         logFilePtr = open(logFileName, "a");
         logFilePtr.write("\n");
         logFilePtr.write("\n");
@@ -112,7 +114,9 @@ if (testName == "runTillFailure"):
         logFilePtr = open(logFileName, "a");
         sparseRepFilePtr= open(sparseRepFileName, "r");
         logFilePtr.write("*************************sparse representation of the graph************************************\n")
+        logFilePtr.write("sparseMatrixStart ")
         logFilePtr.write(sparseRepFilePtr.read());
+        logFilePtr.write("sparseMatrixEnd ")
         logFilePtr.write("\n");
         logFilePtr.write("\n");
         logFilePtr.write("*************************Result of the serial implemetation************************************\n")
@@ -146,8 +150,9 @@ if (testName == "runTillFailure"):
             logFileFailedCasePtr.write(logFilePtr.read());
             logFilePtr.close()
             logFileFailedCasePtr.close(); 
+            drawGraphDebug(logFileName)
         else:
-            os.system("rm -r log");
-
+            os.system("rm -r log")
+            os.system("rm -r log")
 
 #

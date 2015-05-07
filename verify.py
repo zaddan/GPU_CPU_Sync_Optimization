@@ -5,8 +5,8 @@ from book_keeping import *
 def getValue(line):
     values = [] 
     for words in (line.strip().split()):
-        values +=[int(words)]
-    return values
+        values +=[words]
+    return values[1:]
 
 
 def getSparse(sparseRepFileName):
@@ -24,6 +24,42 @@ def getSparse(sparseRepFileName):
             lineNum +=1 
 
     return sparseMatrixResult
+
+#-----------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------
+#---------module_name:::getSparseMessy
+#---------functionlity::: this function looks at the log file and extracts the sparstMatrix
+#-----------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------
+def getSparseMessy(sparseRepFileName):
+    sparseMatrixRow = []
+    sparseMatrixResult = []
+    lineNum = 0; 
+    start = end = firstRow = 0 
+    #get the sparse matrix 
+    with open(sparseRepFileName) as f:
+        for line in f:
+            if len(line.strip().split()) > 0: 
+                if (line.strip().split()[0]) == "sparseMatrixStart":
+                    end = 0 
+                    firstRow = 0 
+                    start = 1
+                if (line.strip().split()[0]) == "sparseMatrixEnd":
+                    end = 1
+                    start = 0
+                if (start == 1 and end != 1 and firstRow != 0) : 
+                    sparseMatrixRow = []
+                    for  words in (line.strip().split()):
+                        sparseMatrixRow += [int(words)]
+                        #print "hlo"
+                    sparseMatrixResult.append(sparseMatrixRow)
+                if (start == 1):
+	                 firstRow +=1 
+
+            if(end == 1): 
+                return sparseMatrixResult
+
+
 #verifies that the set of nodes provided are actually independant by looking at the sparese representation  
 def verifyNodesIndependant(possibleIndepNodeList, sparseRepFileName, printBool, logFileName):
     logFilePtr = open(logFileName, "a")
