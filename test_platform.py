@@ -8,7 +8,7 @@ from time import gmtime, strftime
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------ONLY change this
 numOfNodes = 20 
-numOfTests = 2 
+numOfTests = 1
 #testName = "runSomeSampleTests"
 testName = "runSomeSampleTests"
 #testName = "runTillFailure" 

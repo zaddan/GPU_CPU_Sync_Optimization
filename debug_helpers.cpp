@@ -32,9 +32,9 @@ void showNodesInfo(int *nodesStatus, float *nodeRandValues, int nodeArraySize, s
         string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
         for (int i = 0; i< nodeArraySize; i++){
             if(showFullStatusName) {
-                cout<<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
+                cout<<"node "<< i  + 1<< "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
             }else{
-                cout<<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
+                cout<<"node "<< i + 1 << "th status is: " << nodesStatus[i]<<endl;
             }
         }
         cout<<"***********************************************"; 
@@ -42,14 +42,9 @@ void showNodesInfo(int *nodesStatus, float *nodeRandValues, int nodeArraySize, s
     //show rand values 
     else if (request == "randValues") {
         cout<<"***********************************************"; 
-        cout<<"showing all the nodes status was requests"<<endl; 
-        string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
+        cout<<"showing all the nodes rand values was requests"<<endl; 
         for (int i = 0; i< nodeArraySize; i++){
-            if(showFullStatusName) {
-                cout<<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
-            }else{
-                cout<<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
-            }
+            cout<<"node "<< i  + 1<< "th status is: " << nodeRandValues[i]<<endl;
         }
         cout<<"***********************************************"; 
     } 
@@ -79,31 +74,42 @@ void writeToFileNodeInfo(int *nodesStatus, float *nodeRandValues, int nodeArrayS
     //change the following if status.h changed 
     //show status 
     if (request == "status") {
-        myfile<<"***********************************************";
+        myfile<<"***********************************************"<<endl;
         myfile<<"showing all the nodes status was requests"<<endl; 
         string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
         for (int i = 0; i< nodeArraySize; i++){
             if(showFullStatusName) {
-                myfile<<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
+                myfile<<"node "<< i + 1 << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
             }else{
-                myfile<<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
+                myfile<<"node "<< i  + 1<< "th status is: " << nodesStatus[i]<<endl;
             }
         }
-        myfile<<"***********************************************"; 
+        myfile<<"***********************************************"<<endl;; 
+        myfile<< "status:" << " "; 
+        for (int i = 0; i< nodeArraySize; i++){
+            if(showFullStatusName) {
+                //myfile<<"node "<< i + 1<< "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
+                myfile<< nodeStatusString[nodesStatus[i]]<< " ";
+            }
+        }
+        myfile << endl; 
     }
     //show rand values 
     else if (request == "randValues") {
-        myfile<<"***********************************************"; 
-        myfile<<"showing all the nodes status was requests"<<endl; 
-        string nodeStatusString[3] = {"INACTIVE", "ACTIVE", "SELECTED"};
+        myfile<<"***********************************************"<<endl;; 
+        myfile<<"showing all the nodes rand values was requests"<<endl; 
         for (int i = 0; i< nodeArraySize; i++){
-            if(showFullStatusName) {
-                myfile<<"node "<< i << "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
-            }else{
-                myfile<<"node "<< i << "th status is: " << nodesStatus[i]<<endl;
-            }
+            //myfile<<"node "<< i + 1<< "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
+            myfile<<"node "<< i + 1<< "rand value is: " << nodeRandValues[i] << endl;
         }
-        myfile<<"***********************************************"; 
+        myfile<<"***********************************************"<<endl; 
+        myfile<< "randValues:" << " "; 
+        for (int i = 0; i< nodeArraySize; i++){
+            //myfile<<"node "<< i + 1<< "th status is: " << nodeStatusString[nodesStatus[i]]<<endl;
+            myfile<< nodeRandValues[i] << " ";
+        }
+        myfile<< endl; 
+        myfile<<"***********************************************"<<endl;; 
     } 
 
     //show all the info 
