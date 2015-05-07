@@ -1,4 +1,7 @@
 #include "status.h"
+
+#define DELAY 50
+
 __kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute) {
     int i = get_global_id(0);
     
@@ -20,7 +23,7 @@ __kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues
         execute[i] = 0;
 }
 
-__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute, __global int* ready) {
+__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute, __global int *ready) {
     int i = get_global_id(0);
     
     execute[i] = 1;
@@ -29,9 +32,25 @@ __kernel void mis_parallel_async(__global int *nodes, __global float *nodes_rand
 
     if(nodes_status[i] == ACTIVE )
     {   
-        //while(ready[i] == 0);
+        while(ready[i] == 0){
+            /* this fails at compile stage, uncomment and run ./buildrun.sh to see the error messages
+            int count = DELAY;
+            while(count > 0)
+                count--;
+            */
+
+            /* this fails the same thing
+            for(int i = 0; i < DELAY; i++);
+            */
+        }
+
         for(int k = 0; k < numofneighbour; k++){
-            //while(ready[nodes[indexarray[i] + k]] == 0);
+            while(ready[nodes[indexarray[i] + k]] == 0){
+                //int count = DELAY;
+                //while(count > 0)
+                //    count--; 
+                //for(int i = 0; i < DELAY; i++);
+            }
 
             if(nodes_status[nodes[indexarray[i] + k]] == ACTIVE && nodes_randvalues[i] > nodes_randvalues[nodes[indexarray[i] + k]]) 
             {
