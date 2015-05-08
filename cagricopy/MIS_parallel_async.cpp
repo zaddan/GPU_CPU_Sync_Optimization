@@ -12,6 +12,8 @@ using namespace std;
 #include "status.h"
 #include "debug_helpers.h"
 
+#define DEBUG2 1
+
 /*
     reads input file and allocate node_array (list of neighbors) and 
     index_array (number of neighbors) to represent the graph
@@ -39,6 +41,7 @@ int read_input_file(string filename, int **addr_node_array, int **addr_index_arr
     cout << "read_input_file: " << numofnodes << " " << total_numofneighbors <<endl;
 #endif
 
+//#define numofnodes numofnodes
     
     int* node_array = new int[total_numofneighbors * 2]; //neighbours of each vertex, CSR representation
     //int* node_array = new int[total_numofneighbors]; //neighbours of each vertex, CSR representation
@@ -147,7 +150,7 @@ void write_output(string filename, int *status_array, int numofnodes){
 
     ofs << endl;
 }
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int main(int argc, char *argv[]) {
     
     	string outFilename; 
@@ -226,14 +229,20 @@ int main(int argc, char *argv[]) {
     
     	SNK_INIT_LPARM(lparm,numofnodes);
 	int *counter_gpu = new int[numofnodes]; //this will be used to store counter information for every gpu thread
-	
+	std::fill_n(counter_gpu, numofnodes,0);	
+
 	//Defining the prime
 	int prime;
-	if (numofnodes > 10000 )
-		prime = numofnodes / 10000; //
+	printf("numofnodes here is %d",numofnodes);
+	if (numofnodes > 100 )
+		prime = numofnodes / 250;
 	else prime = numofnodes;
 	printf("Prime is = %d\n", prime);
 	//Normally input sizes are pretty big. Remember the dimacs sparse input graphs. smallest was 500,000
+
+#if DEBUG2
+printf("gpu_remaningnodes is %d \n", gpu_remainingnodes);
+#endif
 
 
 while(gpu_remainingnodes > 0)
@@ -242,38 +251,54 @@ while(gpu_remainingnodes > 0)
        
 	if(step == 0)
 	{	
+#if DEBUG2
+printf("In First Prime Step\n");
+#endif	
+
+	if(numofnodes > 100)
+	{	
 	//Initilize the first primeth nodes of the input then launch kernel
-	for(int i = 0; i < prime; i++)
+	for(int i = 0; i < 1; i++)
 		{
             	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
         	}
-        
+        printf("Randed prime part now calling kernel\n");
 	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
        
 	//rand the rest of the nodes while gpu is executing
 	for(int i = prime; i < numofnodes; i++)
 		{
-            nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-            //nodes_ready[i] = 1;
+            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+            	//nodes_ready[i] = 1;
         	}
        
 	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
-//        stream_sync(stream);
+	}
 
+	else if (numofnodes <= 1000)
+	{
+	//rand the rest of the nodes while gpu is executing
+	for(int i = prime; i < numofnodes; i++)
+		{
+            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+            	//nodes_ready[i] = 1;
+        	}
+ 	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm); 
+	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+	
 
+	}
 #if DEBUG
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
 #endif
         //writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
-
-#if DEBUG2 //I am sorry i had to use DEBUG2 I only want to see certain things. -Cagri
-	for(int k=0 ; k<numnofnodes; k++)
-		if(counter_gpu != 0)
-			printf("Counter has been calculated at '%d' with value '%d'",k,counter_gpu[k]);
-#endif
-	
+#if DEBUG2
+	for(int k=0 ; k<numofnodes; k++)
+		if(counter_gpu[k] != 0)
+			printf("Counter is not zero at '%d' with value '%d'\n",k,counter_gpu[k]);
+#endif	
 
 	/*end of first step where we have launched prime and launched following kernel and then kept  
 	randomizing the rest of the nodes. Remember from the preliminary results GPU takes longer than CPU
@@ -284,16 +309,21 @@ while(gpu_remainingnodes > 0)
 	*/
 	
 	stream_sync(stream); //Make GPU finish its current execution before goes to the next one(the one will be submitted at the else part)
+        cout<< "done with firststatge" <<endl;	
 	}
 	
 	else   //as long as we have more nodes to work on, we will get into this 'else' 
 	{	
+#if DEBUG2
+printf("Else part is executed, remaining gpu nodes =%d \n",gpu_remainingnodes);
+#endif		
+		stream_sync(stream);
 		//randomize every node for the next step meanwhile gpu executes
-		for(int i = 0; i < numofnodes; i++)
-		{
-            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-            	//nodes_ready[i] = 1;
-       	 	}
+//		for(int i = 0; i < numofnodes; i++)
+//		{
+  //          	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+    //        	//nodes_ready[i] = 1;
+      // 	 	}
         	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
        
         
@@ -308,11 +338,11 @@ while(gpu_remainingnodes > 0)
 
 
 #if DEBUG
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues,  numofnodes, "all");
 #endif
         
 	//writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 	}
 
