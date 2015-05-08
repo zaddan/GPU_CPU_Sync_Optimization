@@ -204,7 +204,6 @@ int main(int argc, char *argv[]) {
     int *nodes_status_parallel = new int[numofnodes];
     int *nodes_execute = new int[numofnodes];
     std::fill_n(nodes_status_parallel, numofnodes, ACTIVE);
-    char *nodes_ready = new char[numofnodes];
 #if DEBUG
     printf("Before Parallel Exeuction\nNumOfNOdes = %d\n",numofnodes);
     for(int p=0; p<numofnodes; p++)
@@ -216,26 +215,20 @@ int main(int argc, char *argv[]) {
 
     int gpu_remainingnodes = numofnodes;
     int step = 0;
-    int stream = 0;
     
     SNK_INIT_LPARM(lparm,numofnodes);
     //Launch_params_t lparm={.ndim=1,.gdims={numofnodes},.ldims={256}};
     while(gpu_remainingnodes > 0){
-        lparm->stream = stream;
         // randomize array
-        std::fill_n(nodes_ready, numofnodes, 0);
-        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, lparm);
-        for(int i = 0; i < numofnodes; i++){
-            nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-            nodes_ready[i] = 1;
-        }
+        //for(int i = 0; i < numofnodes; i++)
+        //    nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+        mis_parallel(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
         deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
-        stream_sync(stream);
 #if DEBUG
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #endif
         //writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #if DEBUG
         for(int p=0;p<numofnodes;p++)

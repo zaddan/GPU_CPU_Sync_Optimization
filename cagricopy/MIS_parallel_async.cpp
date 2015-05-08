@@ -150,22 +150,24 @@ void write_output(string filename, int *status_array, int numofnodes){
 
 int main(int argc, char *argv[]) {
     
-    string outFilename; 
-    string inFilename; 
-    string logFileName;
-    if (argc <= 3) {
-        cout << "not enough arguments" << endl;
-        cout <<" you need to provide the sparse graph file name and then desired output file name and a logfile name"<<endl; 
-        exit (EXIT_FAILURE); 
-    }else{
-        inFilename = argv[1];
-        outFilename = argv[2]; 
-        logFileName = argv[3]; 
-    } 
+    	string outFilename; 
+   	string inFilename; 
+    	string logFileName;
 
-    int *nodes, *index_array;
+    	if (argc <= 3) {
+        	cout << "not enough arguments" << endl;
+        	cout <<" you need to provide the sparse graph file name and then desired output file name and a logfile name"<<endl; 
+        	exit (EXIT_FAILURE); 
+    	}else{
+        	inFilename = argv[1];
+        	outFilename = argv[2]; 
+        	logFileName = argv[3]; 
+    	} 
 
-    int numofnodes =  read_input_file(inFilename, &nodes, &index_array);
+    	int *nodes, *index_array;
+
+    	int numofnodes =  read_input_file(inFilename, &nodes, &index_array);
+
 #if DEBUG
     cout << "MAIN: " <<endl;
     cout << "numofnodes: " << numofnodes << endl;
@@ -178,16 +180,19 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    // setup random array
-    float *nodes_randvalues = new float[numofnodes];
-    srand (static_cast <unsigned> (time(0)));
-    for(int i = 0; i < numofnodes; i++)
-        nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/20));
+	// setup random array
+    	float *nodes_randvalues = new float[numofnodes];
+    	srand (static_cast <unsigned> (time(0)));
+	std::fill_n(nodes_randvalues, numofnodes, 0); // initilize the rand array to zero	
+
+//    for(int i = 0; i < numofnodes; i++)
+//        nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/20));
 
 
-    // setup status array
-    int *nodes_status = new int[numofnodes];
-    std::fill_n(nodes_status, numofnodes, ACTIVE);
+    	// setup status array
+    	int *nodes_status = new int[numofnodes];
+    	std::fill_n(nodes_status, numofnodes, ACTIVE);
+
 #if DEBUG
     cout << "MAIN: " <<endl;
     for(int p = 0; p < numofnodes; p++)
@@ -198,13 +203,14 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    /*PARALLEL EXECUTION*/
+    	/*PARALLEL EXECUTION*/
 
-    // reset status
-    int *nodes_status_parallel = new int[numofnodes];
-    int *nodes_execute = new int[numofnodes];
-    std::fill_n(nodes_status_parallel, numofnodes, ACTIVE);
-    char *nodes_ready = new char[numofnodes];
+    	// reset status
+    	int *nodes_status_parallel = new int[numofnodes];
+    	int *nodes_execute = new int[numofnodes];
+    	std::fill_n(nodes_status_parallel, numofnodes, ACTIVE);
+	//    int *nodes_ready = new int[numofnodes];
+
 #if DEBUG
     printf("Before Parallel Exeuction\nNumOfNOdes = %d\n",numofnodes);
     for(int p=0; p<numofnodes; p++)
@@ -214,29 +220,83 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    int gpu_remainingnodes = numofnodes;
-    int step = 0;
-    int stream = 0;
+    	int gpu_remainingnodes = numofnodes;
+    	int step = 0;
+ 	int stream = 0;
     
-    SNK_INIT_LPARM(lparm,numofnodes);
-    //Launch_params_t lparm={.ndim=1,.gdims={numofnodes},.ldims={256}};
-    while(gpu_remainingnodes > 0){
-        lparm->stream = stream;
-        // randomize array
-        std::fill_n(nodes_ready, numofnodes, 0);
-        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, lparm);
-        for(int i = 0; i < numofnodes; i++){
+    	SNK_INIT_LPARM(lparm,numofnodes);
+    
+	while(gpu_remainingnodes > 0){
+      		lparm->stream = stream;
+       
+		int counter_gpu = new int[numofnodes]; //this will be used to store counter information for every gpu thread
+		//Defining the prime
+		if (numofnodes > 10000 )
+			int prime = numofnodes / 10000; //
+		else prime = numofnodes;
+		printf("Prime is = %d\n", prime);
+		//Normally input sizes are pretty big. Remember the dimacs sparse input graphs. smallest was 500,000
+
+	if(step == 0)
+	{	
+	//Initilize the first primeth nodes of the input then launch kernel
+	for(int i = 0; i < prime; i++)
+		{
+            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+        	}
+        
+	mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
+       
+	//rand the rest of the nodes while gpu is executing
+	for(int i = prime; i < numofnodes; i++)
+	{
             nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-            nodes_ready[i] = 1;
+            //nodes_ready[i] = 1;
         }
-        deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
-        stream_sync(stream);
+        
+	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+//        stream_sync(stream);
+
+
 #if DEBUG
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #endif
         //writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+}
+	stream_sync(stream)
+else 
+{
+	
+	//randomize every node for the next step meanwhile gpu executes
+	for(int i = 0; i < numofnodes; i++){
+            nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+            //nodes_ready[i] = 1;
+        }
+        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
+       
+}
+        
+	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+   	stream_sync(stream);
+
+
+#if DEBUG
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+#endif
+        //writing the random values in the log file 
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
+        //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+}
+
+
+
+
+}
+
+
+
 #if DEBUG
         for(int p=0;p<numofnodes;p++)
         {

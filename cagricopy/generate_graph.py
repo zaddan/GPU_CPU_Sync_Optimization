@@ -48,7 +48,6 @@ def draw_graph(graphDic, nodesStatus, imageName):
     
     #nx.draw_networkx(G) 
     #save the result  semiSparseRep 
-    print "image name is" + imageName 
     plt.savefig(imageName);
 
 #
