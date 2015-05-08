@@ -233,17 +233,20 @@ int main(int argc, char *argv[]) {
 
 	//Defining the prime
 	int prime;
-	printf("numofnodes here is %d",numofnodes);
-	if (numofnodes > 100 )
-		prime = numofnodes / 250;
-	else prime = numofnodes;
-	printf("Prime is = %d\n", prime);
+//	printf("numofnodes here is %d",numofnodes);
+//	if (numofnodes > 100 )
+//		prime = numofnodes / 1000;
+//	else prime = numofnodes;
+//	printf("Prime is = %d\n", prime);
 	//Normally input sizes are pretty big. Remember the dimacs sparse input graphs. smallest was 500,000
 
 #if DEBUG2
 printf("gpu_remaningnodes is %d \n", gpu_remainingnodes);
 #endif
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 while(gpu_remainingnodes > 0)
 {
@@ -255,45 +258,48 @@ while(gpu_remainingnodes > 0)
 printf("In First Prime Step\n");
 #endif	
 
-	if(numofnodes > 100)
+	if(numofnodes >= 10)
 	{	
 	//Initilize the first primeth nodes of the input then launch kernel
-	for(int i = 0; i < 1; i++)
-		{
-            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-        	}
+//	for(int i = 0; i < prime; i++)
+//		{
+  //          	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+    //    	}
         printf("Randed prime part now calling kernel\n");
 	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
        
 	//rand the rest of the nodes while gpu is executing
-	for(int i = prime; i < numofnodes; i++)
+	for(int i = 0; i < numofnodes; i++)
 		{
             	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
             	//nodes_ready[i] = 1;
         	}
-       
+	cout << "before deactivatin" <<endl;       
 	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
 	}
 
-	else if (numofnodes <= 1000)
+	else if (numofnodes < 10)
 	{
 	//rand the rest of the nodes while gpu is executing
-	for(int i = prime; i < numofnodes; i++)
+		mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm); 
+	
+for(int i = 0; i < numofnodes; i++)
 		{
             	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
             	//nodes_ready[i] = 1;
         	}
- 	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm); 
-	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+ deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
 	
 
 	}
 #if DEBUG
         showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
 #endif
+	cout << "write to file before" << endl;
         //writing the random values in the log file 
         writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+	cout << "after to file" <<endl;
 #if DEBUG2
 	for(int k=0 ; k<numofnodes; k++)
 		if(counter_gpu[k] != 0)
@@ -307,10 +313,21 @@ printf("In First Prime Step\n");
 	Computing Units (CUs). 8 CU we have and their frequency is not much high. Something around 700Mhz maybe
 	if I am remembering correctly. So having GPU time > CPU time in our case is expected. -Cagri
 	*/
-	
+	cout<< "before stream sync" << endl;
 	stream_sync(stream); //Make GPU finish its current execution before goes to the next one(the one will be submitted at the else part)
         cout<< "done with firststatge" <<endl;	
+	
+	for(int l=0; l<numofnodes; l++)
+	{
+	printf("Rand[%d]= %.5f -- ",l,nodes_randvalues[l]);
+	printf("Status[%d] = %d",l,nodes_status_parallel[l]);
+	printf("Execute[%d] = %d\n",l,nodes_execute[l]);
 	}
+
+
+
+	}
+
 	
 	else   //as long as we have more nodes to work on, we will get into this 'else' 
 	{	
@@ -344,8 +361,14 @@ printf("Else part is executed, remaining gpu nodes =%d \n",gpu_remainingnodes);
 	//writing the random values in the log file 
         writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+	
+	for(int l=0; l<numofnodes; l++)
+	{
+	printf("Rand[%d]= %.5f -- ",l,nodes_randvalues[l]);
+	printf("Status[%d] = %d",l,nodes_status_parallel[l]);
+	printf("Execute[%d] = %d\n",l,nodes_execute[l]);
 	}
-
+	}	
 step++;
 
 }

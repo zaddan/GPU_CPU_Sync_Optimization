@@ -34,7 +34,7 @@ __kernel void mis_parallel_async(__global int* counter,__global int *nodes, __gl
 	while( nodes_randvalues[i] == 0 )
 		countervalue++;
 
-	if(nodes_randvalues[i] != 0 )
+	if(nodes_status[i] == ACTIVE )
 	{	 
        		for(int k = 0; k < numofneighbour; k++)
 		{
