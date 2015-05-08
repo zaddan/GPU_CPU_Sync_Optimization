@@ -225,18 +225,21 @@ int main(int argc, char *argv[]) {
  	int stream = 0;
     
     	SNK_INIT_LPARM(lparm,numofnodes);
-    
-	while(gpu_remainingnodes > 0){
-      		lparm->stream = stream;
-       
-		int counter_gpu = new int[numofnodes]; //this will be used to store counter information for every gpu thread
-		//Defining the prime
-		if (numofnodes > 10000 )
-			int prime = numofnodes / 10000; //
-		else prime = numofnodes;
-		printf("Prime is = %d\n", prime);
-		//Normally input sizes are pretty big. Remember the dimacs sparse input graphs. smallest was 500,000
+	int *counter_gpu = new int[numofnodes]; //this will be used to store counter information for every gpu thread
+	
+	//Defining the prime
+	int prime;
+	if (numofnodes > 10000 )
+		prime = numofnodes / 10000; //
+	else prime = numofnodes;
+	printf("Prime is = %d\n", prime);
+	//Normally input sizes are pretty big. Remember the dimacs sparse input graphs. smallest was 500,000
 
+
+while(gpu_remainingnodes > 0)
+{
+      	lparm->stream = stream;
+       
 	if(step == 0)
 	{	
 	//Initilize the first primeth nodes of the input then launch kernel
@@ -245,15 +248,15 @@ int main(int argc, char *argv[]) {
             	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
         	}
         
-	mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
+	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
        
 	//rand the rest of the nodes while gpu is executing
 	for(int i = prime; i < numofnodes; i++)
-	{
+		{
             nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
             //nodes_ready[i] = 1;
-        }
-        
+        	}
+       
 	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
 //        stream_sync(stream);
 
@@ -264,34 +267,56 @@ int main(int argc, char *argv[]) {
         //writing the random values in the log file 
         writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
-}
-	stream_sync(stream)
-else 
-{
+
+#if DEBUG2 //I am sorry i had to use DEBUG2 I only want to see certain things. -Cagri
+	for(int k=0 ; k<numnofnodes; k++)
+		if(counter_gpu != 0)
+			printf("Counter has been calculated at '%d' with value '%d'",k,counter_gpu[k]);
+#endif
 	
-	//randomize every node for the next step meanwhile gpu executes
-	for(int i = 0; i < numofnodes; i++){
-            nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
-            //nodes_ready[i] = 1;
-        }
-        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
+
+	/*end of first step where we have launched prime and launched following kernel and then kept  
+	randomizing the rest of the nodes. Remember from the preliminary results GPU takes longer than CPU
+	since the GPU cores are pretty slow. Although Pannotia paper MIS implementation states CPU takes longer
+	than GPU's execution in that case they have used discrete GPU where it is way way faster than HSA
+	Computing Units (CUs). 8 CU we have and their frequency is not much high. Something around 700Mhz maybe
+	if I am remembering correctly. So having GPU time > CPU time in our case is expected. -Cagri
+	*/
+	
+	stream_sync(stream); //Make GPU finish its current execution before goes to the next one(the one will be submitted at the else part)
+	}
+	
+	else   //as long as we have more nodes to work on, we will get into this 'else' 
+	{	
+		//randomize every node for the next step meanwhile gpu executes
+		for(int i = 0; i < numofnodes; i++)
+		{
+            	nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+            	//nodes_ready[i] = 1;
+       	 	}
+        	mis_parallel_async(counter_gpu,nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
        
-}
         
-	deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
-   	stream_sync(stream);
+	/* One concern is : I will be using rand_values to check whether the node is ready to compare or not
+	since checking the readyness array then comparing rand values requires two memory accesses and it is
+	inefficienct. We have to optimize the code.
+	Concern is Am I sure that second step CPU randomization will not interfere with the current goi`ng on GPU execution.
+	*/
+	
+		deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
+   		stream_sync(stream);
 
 
 #if DEBUG
         showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #endif
-        //writing the random values in the log file 
+        
+	//writing the random values in the log file 
         writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
-}
+	}
 
-
-
+step++;
 
 }
 
@@ -311,10 +336,11 @@ else
         printf("count: %d\n", count);
         cout << "gpu remaining nodes: " << gpu_remainingnodes << endl;
 #endif
-        step++;
-    }
+
 
     cout << "Total number of steps parallel: " << step << endl;
+
+
 #if DEBUG
     printf("~~Parallel Result~~\n");
     for(int y = 0; y < numofnodes; y++){
