@@ -1,5 +1,6 @@
 #all the following files are generated, thus we include them in the gitignore, since they change everytime we run the program
 MIS_parallel
+MIS_parallel_async
 MIS_result_parallel.txt
 MIS_result_serial.txt
 book_keeping.pyc

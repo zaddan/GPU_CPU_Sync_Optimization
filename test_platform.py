@@ -8,7 +8,7 @@ from generate_graph import *
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------ONLY change this
 numOfNodes = 7 
-numOfTests = 1
+numOfTests = 3
 #---------guide::: type of the test to run
 testName = "runSomeSampleTests"
 #testName = "runTillFailure" 
@@ -61,13 +61,14 @@ def runSyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileN
     logFilePtr = open(logFileName, "a");
     logFilePtr.write("\n");
     logFilePtr.write("\n");
-    logFilePtr.write("*************************Result of the Parralel implemetations*********************************\n")
+    logFilePtr.write("*************************Result of the syncParralel implemetations*********************************\n")
     MISResultToVerifyFileParallelPtr = open(MISResultToVerifyFileNameParallel, "r");
     logFilePtr.write(MISResultToVerifyFileParallelPtr.read());
     #   ##---------guide::: verify
-    print "verifying the parallel exection...."
+    print "verifying the synchparallel exection...."
     logFilePtr.write("***********************************************************************************************\n")
-    logFilePtr.write("*************************Parralel Test Results: ***********************************************\n")
+    logFilePtr.write("*************************syncParralel Test Results: ***********************************************\n")
+        
     #logFilePtr.write("*******************************************************************************************************************\n")
     logFilePtr.close() 
     
@@ -83,43 +84,44 @@ def runSyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileN
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def runAsyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase):
     os.system("./buildrun.sh")
-    os.system("./MIS_parallel" + " " + sparseRepFileName + " " + MISResultToVerifyFileNameParallel + " " + logFileName); 
+    os.system("./MIS_parallel_async" + " " + sparseRepFileName + " " + MISResultToVerifyFileNameParallel + " " + logFileName); 
     logFilePtr = open(logFileName, "a");
     logFilePtr.write("\n");
     logFilePtr.write("\n");
-    logFilePtr.write("*************************Result of the Parralel implemetations*********************************\n")
+    logFilePtr.write("*************************Result of the AsyncParralel implemetations*********************************\n")
     MISResultToVerifyFileParallelPtr = open(MISResultToVerifyFileNameParallel, "r");
     logFilePtr.write(MISResultToVerifyFileParallelPtr.read());
     #   ##---------guide::: verify
-    print "verifying the parallel exection...."
+    print "verifying the Asyncparallel exection...."
     logFilePtr.write("***********************************************************************************************\n")
-    logFilePtr.write("*************************Parralel Test Results: ***********************************************\n")
+    logFilePtr.write("*************************AsyncParralel Test Results: ***********************************************\n")
+    
     #logFilePtr.write("*******************************************************************************************************************\n")
     logFilePtr.close() 
     
     return verifyMaximalSet(sparseRepFileName,  MISResultToVerifyFileNameParallel, logFileName)
        
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#---------guide::: test the serial code 
-def runSerial(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase):
-    #---------guide::: run the serial code
-    os.system("g++ MIS_serial.cpp debug_helpers.cpp -o MIS_serial")
-    os.system("./MIS_serial" + " " + sparseRepFileName + " " + MISResultToVerifyFileNameSerial+ " " + logFileName); 
-    #
-    #os.remove(logFileName) 
-    logFilePtr = open(logFileName, "a");
-    logFilePtr.write("\n");
-    logFilePtr.write("\n");
-    logFilePtr.write("*************************Result of the serial implemetation************************************\n")
-    MISResultToVerifyFileSerialPtr = open(MISResultToVerifyFileNameSerial, "r");
-    logFilePtr.write(MISResultToVerifyFileSerialPtr.read());
-    #---------guide::: verify
-    print "verifying the serial exection...."
-    logFilePtr.write("***********************************************************************************************\n")
-    logFilePtr.write("*************************Serial Test Results: *************************************************\n")
-    logFilePtr.close() 
-    return verifyMaximalSet(sparseRepFileName,  MISResultToVerifyFileNameSerial, logFileName)
- 
+##------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------guide::: test the serial code 
+#def runSerial(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase):
+#    #---------guide::: run the serial code
+#    os.system("g++ MIS_serial.cpp debug_helpers.cpp -o MIS_serial")
+#    os.system("./MIS_serial" + " " + sparseRepFileName + " " + MISResultToVerifyFileNameSerial+ " " + logFileName); 
+#    #
+#    #os.remove(logFileName) 
+#    logFilePtr = open(logFileName, "a");
+#    logFilePtr.write("\n");
+#    logFilePtr.write("\n");
+#    logFilePtr.write("*************************Result of the serial implemetation************************************\n")
+#    MISResultToVerifyFileSerialPtr = open(MISResultToVerifyFileNameSerial, "r");
+#    logFilePtr.write(MISResultToVerifyFileSerialPtr.read());
+#    #---------guide::: verify
+#    print "verifying the serial exection...."
+#    logFilePtr.write("***********************************************************************************************\n")
+#    logFilePtr.write("*************************Serial Test Results: *************************************************\n")
+#    logFilePtr.close() 
+#    return verifyMaximalSet(sparseRepFileName,  MISResultToVerifyFileNameSerial, logFileName)
+# 
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------guide::: test the serial code 
@@ -173,8 +175,8 @@ def runAll(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logF
     #---------guide:::  run serial test
     failed1 = runSerial(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase)
     #---------guide:::  run parallel test
-    failed2 = runSynParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-    return failed1 or failed2
+    failed3 = runAsyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase)
+    return failed1 or failed2 or failed3
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 if (testName == "runSomeSampleTests"):
     counter  = 0
@@ -188,12 +190,16 @@ if (testName == "runSomeSampleTests"):
         if (algorithm == "serial"): 
             #---------guide:::  run serial test
            runSerial(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-        if (algorithm == "syncParallel"): 
+        elif (algorithm == "syncParallel"): 
             #---------guide:::  run parallel
             runSyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-        if(algorithm == "all"):
+        elif (algorithm == "asyncParallel"): 
+            runAsyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase)
+        elif(algorithm == "all"):
             runAll(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-
+        else:
+            print "this algorithm is not acceptable" 
+            exit()
 
 
 
@@ -210,11 +216,17 @@ if (testName == "runTillFailure"):
         if (algorithm == "serial"): 
             #---------guide:::  run serial test
            failed = runSerial(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-        if (algorithm == "syncParallel"): 
+        elif (algorithm == "syncParallel"): 
             #---------guide:::  run parallel
             failed = runSyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
-        if(algorithm == "all"):
+        elif(algorithm == "all"):
             failed = runAll(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase) 
+
+        elif (algorithm == "asyncParallel"): 
+            failed = runAsyncParallel(sparseRepFileName, MISResultToVerifyFileNameSerial, logFileName, logFileNameFailedCase)
+        else:
+            print "this algorithm is not acceptable" 
+            exit()
 
         if (failed):
             logFileFailedCasePtr = open(logFileNameFailedCase, "a")
