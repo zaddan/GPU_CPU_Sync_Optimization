@@ -18,13 +18,13 @@ using namespace std;
     ** pass reference to int* in order to get the address of the allocated arrays
     returns the number of nodes in the graph
 */
-int read_input_file(string filename, int **addr_node_array, int **addr_index_array)
+void read_input_file(string filename, int **addr_node_array, int **addr_index_array, int *num_nodes, int *num_edges)
 {
     ifstream myfile;
     myfile.open(filename.c_str());
     if(!myfile.is_open()){
         cout << "Error opening file!" << endl; 
-        return 1; 
+        exit(1);
     }
 
     string line;
@@ -34,7 +34,11 @@ int read_input_file(string filename, int **addr_node_array, int **addr_index_arr
     int numofnodes = 0;
     int total_numofneighbors = 0;
     iss >> numofnodes;
-    iss >> total_numofneighbors;  // number is INCORRECT right now
+    iss >> total_numofneighbors;
+
+    *num_nodes = numofnodes;
+    *num_edges = total_numofneighbors;
+
 #if DEBUG
     cout << "read_input_file: " << numofnodes << " " << total_numofneighbors <<endl;
 #endif
@@ -77,8 +81,6 @@ int read_input_file(string filename, int **addr_node_array, int **addr_index_arr
     
     *addr_node_array = node_array;
     *addr_index_array = index_array;
-
-    return numofnodes;
 }
 
 /*
@@ -149,7 +151,10 @@ void write_output(string filename, int *status_array, int numofnodes){
 }
 
 int main(int argc, char *argv[]) {
-    
+
+    int *test;
+    delete[] test;   
+ 
     string outFilename; 
     string inFilename; 
     string logFileName;
@@ -164,8 +169,10 @@ int main(int argc, char *argv[]) {
     } 
 
     int *nodes, *index_array;
+    int numofnodes, numofedges;
 
-    int numofnodes =  read_input_file(inFilename, &nodes, &index_array);
+    read_input_file(inFilename, &nodes, &index_array, &numofnodes, &numofedges);
+
 #if DEBUG
     cout << "MAIN: " <<endl;
     cout << "numofnodes: " << numofnodes << endl;
@@ -200,11 +207,16 @@ int main(int argc, char *argv[]) {
 
     /*PARALLEL EXECUTION*/
 
-    // reset status
+    // setup status array, exectue array, ready array and counter arrays
     int *nodes_status_parallel = new int[numofnodes];
+
     int *nodes_execute = new int[numofnodes];
     std::fill_n(nodes_status_parallel, numofnodes, ACTIVE);
+
     char *nodes_ready = new char[numofnodes];
+    int *node_counters = new int[numofnodes];
+    int *node_neighbor_counters = new int[numofedges * 2];
+
 #if DEBUG
     printf("Before Parallel Exeuction\nNumOfNOdes = %d\n",numofnodes);
     for(int p=0; p<numofnodes; p++)
@@ -224,7 +236,10 @@ int main(int argc, char *argv[]) {
         lparm->stream = stream;
         // randomize array
         std::fill_n(nodes_ready, numofnodes, 0);
-        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, lparm);
+        std::fill_n(node_counters, numofnodes, 0);
+        std::fill_n(node_neighbor_counters, numofedges * 2, 0);
+
+        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, node_counters, node_neighbor_counters, lparm);
         for(int i = 0; i < numofnodes; i++){
             nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
             nodes_ready[i] = 1;
@@ -234,6 +249,15 @@ int main(int argc, char *argv[]) {
 #if DEBUG
         showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
 #endif
+
+        for(int i = 0; i < numofnodes; ++i){
+            if(node_counters[i] != 0)
+                cout << "Node " << i + 1 << " waited " << node_counters[i] << " iterations." << endl;
+            //int numofneighbors = index_array[i+1] - index_array[i];
+            //for(int k = 0; k < numofneighbors; ++k)
+            //    cout << "Neighbor node " << nodes[index_array[i] + k] + 1 << " waited " << node_neighbor_counters[index_array[i] + k] << " iterations." << endl;
+        }
+
         //writing the random values in the log file 
         writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
