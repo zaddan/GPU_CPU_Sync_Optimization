@@ -4,13 +4,14 @@
 using namespace std;
 #include "MIS_parallel.h"
 #include <fstream>
-
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
 
 #include "status.h"
+#include "debug_helpers.h"
+
 #define RUNBOTH 0
 #define DEBUG 0
 void writeResults(string outFileName, int *nodes_status, int numofnodes){
@@ -103,13 +104,16 @@ int main(int argc, char *argv[]) {
     //string filename = "af_shell9.graph.copy";
     string outFileName; 
     string filename; 
-    if (argc <= 2) {
+    string logFileName; 
+    
+    if (argc <= 3) {
         cout << "not enough arguments" << endl;
         cout <<" you need to provide the sparse graph file name and then desired output file name"<<endl; 
         exit (EXIT_FAILURE); 
     }else{
         filename = argv[1];
         outFileName = argv[2]; 
+        logFileName = argv[3]; 
     } 
     int *nodes, *index_array;
 
@@ -222,6 +226,12 @@ int main(int argc, char *argv[]) {
 
 //  ofstream outfile (outFileName.c_str()); 
   writeResults(outFileName, nodes_status, numofnodes); 
+  
+  //showing the node status on the command prompt 
+  showNodesInfo(nodes_status, nodes_randvalues, numofnodes, "all");
+  //writing the results in the log file  
+  writeToFileNodeInfo(nodes_status, nodes_randvalues, numofnodes,logFileName, "all");
+
 //  int numOfIndependentNodes= 0; 
 //  outfile<<"here is the set of independent nodes:" << endl;
 //  for(int p=0; p < numofnodes; p++)

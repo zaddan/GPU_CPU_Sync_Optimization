@@ -47,7 +47,7 @@ def getSparseMessy(sparseRepFileName):
                 if (line.strip().split()[0]) == "sparseMatrixEnd":
                     end = 1
                     start = 0
-                if (start == 1 and end != 1 and firstRow != 0) : 
+                if (start == 1 and end != 1 and firstRow >= 2) : 
                     sparseMatrixRow = []
                     for  words in (line.strip().split()):
                         sparseMatrixRow += [int(words)]

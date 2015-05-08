@@ -225,10 +225,10 @@ int main(int argc, char *argv[]) {
         mis_parallel(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute,lparm);
         deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
 #if DEBUG
-        showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
+        showNodesInfo(nodes_status_parallel, nodes_randvalues, numofnodes, "all");
 #endif
         //writing the random values in the log file 
-        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes,logFileName, "all");
+        writeToFileNodeInfo(nodes_status_parallel, nodes_randvalues, numofnodes,logFileName, "all");
         //showNodesInfo(nodes_status_parallel, nodes_randvalues, nodes_execute, numofnodes, "all");
 #if DEBUG
         for(int p=0;p<numofnodes;p++)
