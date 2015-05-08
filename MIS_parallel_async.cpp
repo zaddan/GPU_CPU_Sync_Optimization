@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
     int *nodes_status_parallel = new int[numofnodes];
     int *nodes_execute = new int[numofnodes];
     std::fill_n(nodes_status_parallel, numofnodes, ACTIVE);
-    int *nodes_ready = new int[numofnodes];
+    char *nodes_ready = new char[numofnodes];
 #if DEBUG
     printf("Before Parallel Exeuction\nNumOfNOdes = %d\n",numofnodes);
     for(int p=0; p<numofnodes; p++)

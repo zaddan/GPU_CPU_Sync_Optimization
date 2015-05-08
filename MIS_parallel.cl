@@ -23,7 +23,7 @@ __kernel void mis_parallel(__global int *nodes, __global float *nodes_randvalues
         execute[i] = 0;
 }
 
-__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute, __global int *ready) {
+__kernel void mis_parallel_async(__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute, __global char *ready) {
     int i = get_global_id(0);
     
     execute[i] = 1;

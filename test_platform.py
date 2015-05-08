@@ -7,10 +7,10 @@ from time import gmtime, strftime
 from generate_graph import *
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------ONLY change this
-numOfNodes = 7 
+numOfNodes = 2000
 numOfTests = 1
-#testName = "runSomeSampleTests"
-testName = "runTillFailure" 
+testName = "runSomeSampleTests"
+#testName = "runTillFailure" 
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
