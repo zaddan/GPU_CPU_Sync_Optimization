@@ -239,11 +239,20 @@ int main(int argc, char *argv[]) {
         std::fill_n(node_counters, numofnodes, 0);
         std::fill_n(node_neighbor_counters, numofedges * 2, 0);
 
-        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, node_counters, node_neighbor_counters, lparm);
-        for(int i = 0; i < numofnodes; i++){
+        int randomize_first = 5;
+
+        for(int i = 0; i < randomize_first; i++){
             nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
             nodes_ready[i] = 1;
         }
+        mis_parallel_async(nodes,nodes_randvalues,nodes_status_parallel, index_array,nodes_execute, nodes_ready, node_counters, node_neighbor_counters, lparm);
+        clock_t start = clock();
+        for(int i = randomize_first; i < numofnodes; i++){
+            nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+            nodes_ready[i] = 1;
+        }
+        cout << "Finished randomizing " << (float) (clock() - start) / CLOCKS_PER_SEC << endl;
+
         deactivate_neighbors(nodes,nodes_randvalues,nodes_status_parallel,&gpu_remainingnodes, index_array,nodes_execute,lparm);
         stream_sync(stream);
 #if DEBUG
