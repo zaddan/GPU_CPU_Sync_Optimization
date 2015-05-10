@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
 	cl_int errorx_gpu_remain;
 	int gpu_remainingnodes = numofnodes;
     	int step = 0;
-	cl_mem buffer_gpu_remainingnodes = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), (void*) &gpu_remainingnodes,errorx_gpu_remain);
+	cl_mem buffer_gpu_remainingnodes = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), (void*) &gpu_remainingnodes,&errorx_gpu_remain);
 		if(errorx_gpu_remain != CL_SUCCESS) cout << "Error creating gpu remainig nodes buffer" << get_error_string(errorx_gpu_remain) << endl;
 		
 	int *counter_gpu = new int[numofnodes]; //this will be used to store counter information for every gpu thread
