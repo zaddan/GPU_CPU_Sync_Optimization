@@ -1,6 +1,9 @@
 __kernel void mis_parallel_async(__global int* counter,__global int *nodes, __global float *nodes_randvalues, __global int *nodes_status, __global int* indexarray, __global int* execute) {
     
 	int i = get_global_id(0);
+
+if (i<8)
+{
 	execute[i] = 1;
 
 	int numofneighbour = indexarray[i+1] - indexarray[i];
@@ -28,4 +31,5 @@ __kernel void mis_parallel_async(__global int* counter,__global int *nodes, __gl
         	execute[i] = 0;
 
 	counter[i]=countervalue;
+}
 }

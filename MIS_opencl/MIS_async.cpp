@@ -399,48 +399,55 @@ int main(int argc, char* argv[])
 		status = clEnqueueSVMUnmap(commandQueue, gpu_remainingnodes,0,NULL,NULL);
 		locked = 0;
 		}
-		cout << "Randomizing values" << endl;
+		
+		cout << "Randomizing Values..." << endl;
+		readerror = clEnqueueSVMMap(commandQueue, CL_TRUE, CL_MAP_WRITE, nodes_randvalues, sizeof(int)*(numofnodes), 0, NULL, NULL);
+			if(readerror != CL_SUCCESS) cout << "Error nodes_randvalues are not mapped to rand them!" << get_error_string(readerror) << endl;
+		
 		for(int i = 0; i < numofnodes; i++)
 		{
-		nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
+			nodes_randvalues[i]= static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/40));
        		}
-        	printf("Randed. Now calling kernel!\n");
-
-		//TODO CALL GPU HERE TO EXECUTE and DEACTIVATE
-		status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &threadnumber, NULL, 0, NULL, NULL);
-		cout << "Execution kernel sent!" <<endl;       
-			if (status != CL_SUCCESS) cout << "Error kernel call! = " << get_error_string(status) << endl;
+		readerror = clEnqueueSVMUnmap(commandQueue,nodes_randvalues, 0, NULL, NULL);
+			if(readerror != CL_SUCCESS) cout << "Error for unmapping nodes_status!" << get_error_string(readerror) << endl;
 		
-		status = clFlush(commandQueue);
-			if(status != CL_SUCCESS) cout << "Error Flushing First = " << get_error_string(status) << endl;
-	
+        	printf("Randed. Now calling Execution Kernel...\n");
+
+		status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &threadnumber, NULL, 0, NULL, NULL);
+			if (status != CL_SUCCESS) cout << "Error kernel call! = " << get_error_string(status) << endl;
+			else cout << "Execution kernel sent!" <<endl;       
+			
+//		status = clFlush(commandQueue);
+//			if(status != CL_SUCCESS) cout << "Error Flushing First = " << get_error_string(status) << endl;
+//			else cout << "Flush sent after execution successfully!" << endl;
+
 //		status = waitForEventAndRelease(&ndrEvt);
 //			if(status != CL_SUCCESS) cout << "Error WaitForEvent 1 = " << get_error_string(status) << endl;
 	
 		status = clEnqueueNDRangeKernel(commandQueue, kernel_deactivate, 1, NULL, &threadnumber, NULL, 0,NULL,NULL);
-		cout << "Deactivation kernel sent!" << endl;
 			if (status != CL_SUCCESS) cout << "Error kernel_deactivate call! = " << get_error_string(status) << endl;
-	
-		status = clFlush(commandQueue);
-			if (status != CL_SUCCESS) cout << "Error flushing second  = " << get_error_string(status) << endl;
-		cout << "flush sent after deactivation" << endl;	
-
+			else cout << "Deactivation kernel sent!" << endl;
+			
+//		status = clFlush(commandQueue);
+//			if (status != CL_SUCCESS) cout << "Error flushing second  = " << get_error_string(status) << endl;
+//			else cout << "Flush sent after deactivation succesfully!" << endl;	
+//
 //		status = waitForEventAndRelease(&ndrEvt);
 //			if(status != CL_SUCCESS) cout << "Error WaitForEvent 2 = " << get_error_string(status) << endl;
-	
+//	
 	//	barrier(CLK_GLOBAL_MEM_FENCE);
 	//	in = (cl_uint *) clEnqueueMapBuffer(commandQueue,buffer_gpu_remainingnodes,CL_TRUE,CL_MAP_READ,0,sizeof(int),0,NULL,NULL,&errormap);
 	//		if(errormap != CL_SUCCESS) cout << "Error for reading back" << get_error_string(errormap) << endl;
 
-		clFinish(commandQueue);
+		status = clFinish(commandQueue);
+			if(status != CL_SUCCESS) cout << "Error in finishing!" << endl;		
 	
-		errormap = clEnqueueSVMMap(commandQueue, CL_TRUE, CL_MAP_READ, gpu_remainingnodes, sizeof(int), 0, NULL, NULL);
-		if(errormap != CL_SUCCESS) cout << "Error for reading back" << get_error_string(errormap) << endl;
-		else locked = 1;
-	//gpu_remainingnodes = (int)(*in);
-	cout<<"before print"<<endl;
-	printf("GPU Remaining Nodes = %d\n", *gpu_remainingnodes);
-	blocker--;
+		status = clEnqueueSVMMap(commandQueue, CL_TRUE, CL_MAP_READ, gpu_remainingnodes, sizeof(int), 0, NULL, NULL);
+			if(errormap != CL_SUCCESS) cout << "Error for reading back" << get_error_string(errormap) << endl;
+			else locked = 1;
+	
+		printf("GPU Remaining Nodes = %d\n", *gpu_remainingnodes);
+		blocker--;
 	}
 
 	
@@ -487,6 +494,28 @@ int main(int argc, char* argv[])
 		if(errormap != CL_SUCCESS) cout << "Error for reading back" << get_error_string(errormap) << endl;
 	errormap = clEnqueueSVMUnmap(commandQueue, nodes_execute, 0, NULL, NULL);
 		if(errormap != CL_SUCCESS) cout << "Error for reading back" << get_error_string(errormap) << endl;
-	
+
+
+
+	clSVMFree(context, nodes);
+        clSVMFree(context, nodes_randvalues);
+	clSVMFree(context, gpu_remainingnodes);
+    	clSVMFree(context, nodes_status);
+    	clSVMFree(context, nodes_status_parallel);
+    	clSVMFree(context, counter_gpu);
+    	clSVMFree(context, nodes_execute);
+     	clSVMFree(context, index_array);
+
+	status = clReleaseKernel(kernel);
+	status = clReleaseKernel(kernel_deactivate);
+
+    	status = clReleaseProgram(program);
+   	status = clReleaseProgram(program_deactivate);
+
+    	status = clReleaseCommandQueue(commandQueue);
+
+    	status = clReleaseContext(context);
+
+
 	return 0;
 }
