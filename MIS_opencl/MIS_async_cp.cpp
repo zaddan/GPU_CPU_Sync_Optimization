@@ -14,7 +14,6 @@
 #include "CL/cl_ext.h"
 
 #include <CLUtil.hpp>
-#define OCL_COMPILER_FLAGS  "FineGrainSVM_OclFlags.txt"
 
 using namespace appsdk;
 
@@ -226,30 +225,36 @@ int main(int argc, char* argv[])
 //    	read_input_file(inFilename, &nodes, &index_array, &numofnodes, &numofedges, context);
 
 
-    /*Step 6: Build program. */
-    cl_program program;
-    buildProgramData buildData;
-    buildData.kernelName = std::string("MIS_async.cl");
-    buildData.devices = devices;
-    buildData.deviceId = 0;
-    buildData.flagsStr = std::string("");
-    buildData.flagsFileName = std::string(OCL_COMPILER_FLAGS);
+	/*Step 5: Create program object */
+	const char *filename = "MIS_async.cl";
+	string sourceStr;
+	status = convertToString(filename, sourceStr);
+	const char *source = sourceStr.c_str();
+	size_t sourceSize[] = {strlen(source)};
+	cl_program program = clCreateProgramWithSource(context, 1, &source, sourceSize, &errorcode);
+		if(errorcode != CL_SUCCESS) cout << "Create Program with Source for MIS_async.cl Failed : " << get_error_string(errorcode) << endl;	
+		else cout << "MIS_async.cl program created!" << endl;
 
-    int retVal = buildOpenCLProgram(program, context, buildData);
-    cout << "Retur value from build: " <<retVal << endl; 
-    CHECK_ERROR(retVal,CL_SUCCESS ,"program build failed");
- 
-    cl_program program_deactivate;
-    buildProgramData buildData2;
-    buildData2.kernelName = std::string("MIS_async_deactivate.cl");
-    buildData2.devices = devices;
-    buildData2.deviceId = 0;
-    buildData2.flagsStr = std::string("");
-    buildData2.flagsFileName = std::string(OCL_COMPILER_FLAGS);
+	const char *filename2 = "MIS_async_deactivate.cl";
+	string sourceStr2;
+	status = convertToString(filename2, sourceStr2);
+	const char *source2 = sourceStr2.c_str();
+	size_t sourceSize2[] = {strlen(source2)};
+	cl_program program_deactivate = clCreateProgramWithSource(context, 1, &source2, sourceSize2, &errorcode);
+		if(errorcode != CL_SUCCESS) cout << "Create Program with Source for MIS_async_deactivate Failed!" << get_error_string(errorcode) << endl;	
+		else cout << "MIS_async_deavtivate.cl program created!" << endl;
 
-    retVal = buildOpenCLProgram(program_deactivate, context, buildData2);
-    cout << "Retur value from build: " <<retVal << endl; 
-    
+	
+	/*Step 6: Build program. */
+	status=clBuildProgram(program, 1,devices,NULL,NULL,NULL);
+			if (status != CL_SUCCESS) cout << "Error Building Program = " << get_error_string(status) << endl;
+			else cout << "Program of MIS_async.cl has been built!" << endl;
+	
+	status=clBuildProgram(program_deactivate,1,devices,NULL,NULL,NULL);
+			if (status != CL_SUCCESS) cout << "Error Building Program2 = " << get_error_string(status) << endl;
+			else cout << "Program of MIS_async_deactivate.cl has been built!" << endl;
+
+	
 	/* Those two bufs will show what is the error of building programs, if there is one*/
 	char buf[0x10000];
 	clGetProgramBuildInfo(program,devices[0],CL_PROGRAM_BUILD_LOG,0x10000,buf,NULL);
